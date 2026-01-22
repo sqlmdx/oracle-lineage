@@ -84,15 +84,15 @@ Now, if we want to see what source columns contribute to specific target columns
 
     SQL> column tbl format a20
     SQL> column src_col format a20
-    SQL> column dst_col format a20
-    SQL> select tbl, src_col, connect_by_root dst_col dst_col
-      2  from table(format_parse_query('select * from vvv')) t
-      3  where tbl is not null
-      4  start with is_top = 1
-      5  connect by prior src_col = dst_col and prior alias != alias
-      6  order by 1, 2, 3;
+    SQL> column tgt_col format a20
+    SQL> select tbl, src_col, connect_by_root tgt_col tgt_col
+    2  from table(format_parse_query('select * from vvv')) t
+    3  where tbl is not null
+    4  start with depth = 3
+    5  connect by prior src_col = tgt_col and prior depth + 3 = depth
+    6  order by 1, 2, 3;
 
-    TBL                  SRC_COL              DST_COL
+    TBL                  SRC_COL              TGT_COL
     -------------------- -------------------- --------------------
     TT1                  A1                   X1
     TT1                  B1                   X1
@@ -106,6 +106,12 @@ Now, if we want to see what source columns contribute to specific target columns
     TT4                  C4                   X2
 
     10 rows selected.
+
+Discussion
+------------
+
+[generic column lineage for Oracle](https://forums.oracle.com/ords/apexds/post/generic-column-lineage-for-oracle-2569)
+
 
 Contribution
 ------------

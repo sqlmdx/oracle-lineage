@@ -4,8 +4,8 @@ create or replace type to_lineage as object
     tbl     varchar2(30),
     alias   varchar2(30),
     src_col varchar2(30),
-    dst_col varchar2(30),
-    is_top  int
+    tgt_col varchar2(30),
+    depth   int
 )
 /
 
@@ -15,13 +15,13 @@ create or replace type tt_lineage as table of to_lineage
 create or replace function format_parse_query(sql_text clob) return tt_lineage as
     result tt_lineage;
 begin
-    select to_lineage(schema, tbl, alias, src_col, dst_col, is_top)
+    select to_lineage(schema, tbl, alias, src_col, tgt_col, is_top)
     bulk collect into result
     from xmltable('//SELECT_LIST_ITEM' 
                   passing parse_query(expand_query(sql_text))
                   columns 
-                    dst_col varchar2(30) path 'COLUMN_ALIAS',
-                    is_top  varchar2(30) path '1-count(ancestor::*[4])',
+                    tgt_col varchar2(30) path 'COLUMN_ALIAS',
+                    is_top  varchar2(30) path 'count(ancestor::*)',
                     orig    xmltype      path '.'
          ) sel,
          xmltable('//COLUMN_REF' 
